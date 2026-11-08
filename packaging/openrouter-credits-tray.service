@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenRouter credits tray indicator
+Comment=Shows the remaining OpenRouter credit in the system tray
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=@PY@ @TARGET@
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
