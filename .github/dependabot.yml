@@ -1,0 +1,15 @@
+# Keeps the commit-pinned GitHub Actions in .github/workflows up to date:
+# Dependabot opens a pull request with the new commit hash and version comment.
+# The cooldown waits a week after a release before proposing it, so a
+# compromised release has time to be caught and pulled first.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
