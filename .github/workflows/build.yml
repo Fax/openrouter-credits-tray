@@ -51,7 +51,7 @@ jobs:
           make deb dist
 
       - name: Lintian
-        run: lintian --fail-on error --info --display-level ">=warning" dist/*.deb
+        run: lintian --fail-on error,warning --info --display-level ">=warning" dist/*.deb
 
       - name: Install the .deb and smoke-test it
         run: |
@@ -59,6 +59,7 @@ jobs:
           openrouter-credits-tray --version
           test -f /etc/xdg/autostart/openrouter-credits-tray.desktop
           test -f /usr/share/applications/openrouter-credits-tray.desktop
+          test -f /usr/share/man/man1/openrouter-credits-tray.1.gz
 
       - uses: actions/upload-artifact@v4
         with:

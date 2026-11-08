@@ -26,7 +26,7 @@ Left-click the badge to open the menu, which includes the Settings form:
 
 ## Requirements
 
-A Linux desktop with a StatusNotifier/AppIndicator tray (Cinnamon, XFCE, KDE,
+A Linux desktop with a StatusNotifier/AppIndicator tray (Cinnamon, Xfce, KDE,
 GNOME with the AppIndicator extension, and others) and the system Python:
 
 ```bash
@@ -55,8 +55,8 @@ install it with apt, which also installs the dependencies:
 sudo apt install ./openrouter-credits-tray_1.0.0_all.deb
 ```
 
-The package installs `/usr/bin/openrouter-credits-tray`, a menu entry, the app
-icon and a system-wide autostart entry in `/etc/xdg/autostart/`, so the tray
+The package installs `/usr/bin/openrouter-credits-tray`, a man page, a menu
+entry, the app icon and a system-wide autostart entry in `/etc/xdg/autostart/`, so the tray
 starts for every user on login. You can also build the package yourself with
 `make deb`.
 

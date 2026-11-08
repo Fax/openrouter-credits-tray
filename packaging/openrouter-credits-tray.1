@@ -1,0 +1,77 @@
+.TH OPENROUTER-CREDITS-TRAY 1 "" "openrouter-credits-tray" "User Commands"
+.SH NAME
+openrouter-credits-tray \- show the remaining OpenRouter credit in the system tray
+.SH SYNOPSIS
+.B openrouter-credits-tray
+.RB [ \-\-delay
+.IR seconds ]
+.br
+.B openrouter-credits-tray
+.RB \-\-settings " | " \-\-check " | " \-\-clear\-key " | " \-\-version
+.br
+.B openrouter-credits-tray
+.B \-\-set\-key
+.RI [ key ]
+.SH DESCRIPTION
+.B openrouter-credits-tray
+shows the remaining credit of an OpenRouter account as a badge in the system
+tray, using the StatusNotifierItem (Ayatana AppIndicator) protocol. The badge is
+green above $2, amber above $0.50 and red below that. Clicking it opens a menu
+with usage details, a manual refresh, the Settings form and an option to start
+on login.
+.PP
+Only one tray runs per user. Starting it again while it is running opens the
+Settings form instead.
+.SH OPTIONS
+.TP
+.BI \-\-delay " seconds"
+Wait before creating the tray icon. Used by the login autostart entry.
+.TP
+.B \-\-settings
+Open the Settings form, where the API key and refresh interval are set, and exit
+when it is closed.
+.TP
+.BR \-\-set\-key " [\fIkey\fR]"
+Store the API key in the desktop keyring and exit. Without an argument the key
+is read from a hidden prompt, so it does not appear in the process list or the
+shell history.
+.TP
+.B \-\-clear\-key
+Remove the stored API key from the keyring and exit.
+.TP
+.B \-\-check
+Print where the API key was found and the current balance, then exit.
+.TP
+.BR \-V ", " \-\-version
+Print the version and exit.
+.TP
+.BR \-h ", " \-\-help
+Print a short help text and exit.
+.SH API KEY
+The key is looked up in this order: the desktop keyring (Secret Service), the
+.B OPENROUTER_API_KEY
+environment variable, then the config file. A key found in the config file is
+moved into the keyring on the next start.
+.SH ENVIRONMENT
+.TP
+.B OPENROUTER_API_KEY
+API key, used when the keyring holds none.
+.TP
+.B OPENROUTER_TRAY_INTERVAL
+Refresh interval in seconds (default 300, minimum 30). A value in the config
+file takes precedence.
+.SH FILES
+.TP
+.I ~/.config/openrouter-credits/config
+Settings that are not secret, such as the refresh interval.
+.TP
+.I ~/.config/autostart/openrouter-credits-tray.desktop
+Per-user start on login entry, or an override that disables the system one.
+.TP
+.I /etc/xdg/autostart/openrouter-credits-tray.desktop
+System-wide start on login entry.
+.TP
+.I ~/.local/share/icons/hicolor/*/apps/openrouter-credits-*.png
+Generated badge icons.
+.SH SEE ALSO
+https://github.com/Fax/openrouter-credits-tray

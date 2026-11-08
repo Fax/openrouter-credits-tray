@@ -7,7 +7,7 @@
 
 Speaks the standard StatusNotifierItem / Ayatana AppIndicator protocol over
 D-Bus, so it works with any host that provides a status-notifier area:
-Cinnamon, XFCE, KDE Plasma, MATE, Budgie, LXQt, and GNOME via the AppIndicator
+Cinnamon, Xfce, KDE Plasma, MATE, Budgie, LXQt, and GNOME via the AppIndicator
 extension. Verified on Cinnamon (Linux Mint 22.3); see the README for the
 panel quirks found there.
 

@@ -37,6 +37,8 @@ install -D -m 0644 "${HERE}/icons/${PKG}-256.png" \
                     "${STAGE}/usr/share/icons/hicolor/256x256/apps/${PKG}.png"
 install -D -m 0644 "${ROOT}/README.md"          "${STAGE}/usr/share/doc/${PKG}/README.md"
 install -D -m 0644 "${ROOT}/LICENSE"            "${STAGE}/usr/share/doc/${PKG}/copyright"
+install -D -m 0644 "${HERE}/${PKG}.1"           "${STAGE}/usr/share/man/man1/${PKG}.1"
+gzip -9n "${STAGE}/usr/share/man/man1/${PKG}.1"
 
 # Debian policy wants a changelog with every package; generate a minimal one.
 # SOURCE_DATE_EPOCH (set by CI from the commit time) keeps the build reproducible.
@@ -71,21 +73,16 @@ Description: OpenRouter credits tray indicator
  key in the desktop keyring (Secret Service).
  .
  Speaks the standard StatusNotifierItem / Ayatana AppIndicator protocol, so it
- works on Cinnamon, XFCE, KDE Plasma, MATE, Budgie, LXQt and GNOME (with the
+ works on Cinnamon, Xfce, KDE Plasma, MATE, Budgie, LXQt and GNOME (with the
  AppIndicator extension).
 EOF
 
-# refresh the shared icon cache so the menu entry shows its icon immediately
-cat > "${STAGE}/DEBIAN/postinst" <<'EOF'
-#!/bin/sh
-set -e
-if [ -x /usr/bin/gtk-update-icon-cache ]; then
-    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || true
-fi
-exit 0
-EOF
-cp "${STAGE}/DEBIAN/postinst" "${STAGE}/DEBIAN/postrm"
-chmod 0755 "${STAGE}/DEBIAN/postinst" "${STAGE}/DEBIAN/postrm"
+# Files under /etc are conffiles: dpkg keeps an admin's edits on upgrade.
+echo "/etc/xdg/autostart/${PKG}.desktop" > "${STAGE}/DEBIAN/conffiles"
+chmod 0644 "${STAGE}/DEBIAN/conffiles"
+
+# No postinst/postrm: hicolor-icon-theme's dpkg trigger on
+# /usr/share/icons/hicolor already rebuilds the icon cache.
 
 (cd "${STAGE}" && find usr etc -type f -print0 | sort -z | xargs -0 md5sum) \
     > "${STAGE}/DEBIAN/md5sums"
