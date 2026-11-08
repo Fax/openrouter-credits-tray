@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+# Pinned to the system interpreter on purpose: this app needs the distro's
+# GI/cairo packages (python3-gi, gir1.2-*), which only exist in /usr/bin/python3.
+# `#!/usr/bin/env python3` breaks when a venv, pyenv or conda shim is first on
+# PATH — that python3 has no gi/cairo and the tray dies at import.
 """OpenRouter credits tray indicator.
 
 Speaks the standard StatusNotifierItem / Ayatana AppIndicator protocol over
@@ -63,6 +67,7 @@ except (ValueError, ImportError):  # pragma: no cover - depends on the host
     HAVE_SECRET = False
 
 APP_ID = "openrouter-credits"
+__version__ = "1.0.0"
 CREDITS_URL = "https://openrouter.ai/api/v1/credits"
 KEY_URL = "https://openrouter.ai/api/v1/key"
 USAGE_PAGE = "https://openrouter.ai/settings/credits"
@@ -878,6 +883,9 @@ def open_settings_form(parent=None, on_saved=None) -> None:
 
 def main() -> int:
     args = sys.argv[1:]
+    if "--version" in args or "-V" in args:
+        print(f"openrouter-credits-tray {__version__}")
+        return 0
     if "--help" in args or "-h" in args:
         print(__doc__)
         print(
@@ -886,6 +894,7 @@ def main() -> int:
             "  --set-key [KEY]   store KEY in the keyring (prompts when omitted) and exit\n"
             "  --clear-key       remove the stored key from the keyring and exit\n"
             "  --check           print the key source and a live balance, then exit\n"
+            "  --version         print the version and exit\n"
             "  --delay <secs>    wait before creating the tray icon (login startup)\n"
         )
         return 0

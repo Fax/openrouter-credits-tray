@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=OpenRouter Credits Tray
+Comment=Show the remaining OpenRouter credit in the system tray
+Exec=openrouter-credits-tray --delay 5
+Icon=openrouter-credits-tray
+Terminal=false
+X-GNOME-Autostart-enabled=true
+NoDisplay=false

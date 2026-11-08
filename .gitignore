@@ -13,3 +13,6 @@ openrouter-credits-*.png
 .idea/
 *.swp
 .DS_Store
+
+# Build artefacts
+dist/

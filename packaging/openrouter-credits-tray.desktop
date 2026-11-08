@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=OpenRouter Credits Tray
+GenericName=Credit monitor
+Comment=Show the remaining OpenRouter credit in the system tray
+Exec=openrouter-credits-tray
+Icon=openrouter-credits-tray
+Terminal=false
+Categories=System;Monitor;
+Keywords=openrouter;credits;balance;tray;indicator;
+StartupNotify=false

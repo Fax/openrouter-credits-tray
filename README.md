@@ -43,13 +43,27 @@ tray falls back to `$OPENROUTER_API_KEY` or the config file.
 
 ## Install
 
+**On Debian / Ubuntu / Mint — from a package** (pulls the dependencies for you):
+
+```bash
+sudo apt install ./openrouter-credits-tray_1.0.0_all.deb
+```
+
+That installs `/usr/bin/openrouter-credits-tray`, a menu entry, the app icon, and
+a system-wide autostart entry (`/etc/xdg/autostart/`) so it starts for every user
+on login. Grab the `.deb` from the releases page, or build it with `make deb`.
+
+**Anywhere else — from source:**
+
 ```bash
 git clone https://github.com/<you>/openrouter-credits-tray.git
 cd openrouter-credits-tray
 ./install.sh              # copies the script to ~/.local/bin and starts it
 ```
 
-Then open the tray menu → **Settings…** and paste an OpenRouter API key
+Or from a release tarball: unpack it and run `./install.sh`.
+
+Either way, open the tray menu → **Settings…** and paste an OpenRouter API key
 (create one at <https://openrouter.ai/settings/keys>). Save — the key goes
 straight into your keyring.
 
@@ -153,6 +167,30 @@ rm ~/.config/autostart/openrouter-credits.desktop   # if enabled
 rm -rf ~/.config/openrouter-credits
 rm ~/.local/share/icons/hicolor/*/apps/openrouter-credits-*.png
 ```
+
+## Packaging
+
+```bash
+make test        # unit tests
+make deb         # dist/openrouter-credits-tray_<version>_all.deb
+make dist        # dist/openrouter-credits-tray-<version>.tar.gz
+make install     # user-local install (same as ./install.sh --autostart)
+make uninstall   # remove the user-local install (your keyring entry is kept)
+make icons       # regenerate packaging/icons from the app's own drawing code
+```
+
+The version comes from `__version__` in the script, so the package, the tarball
+and `--version` can't drift apart.
+
+The `.deb` is `Architecture: all` and declares its dependencies
+(`python3-gi`, `gir1.2-gtk-3.0`, `gir1.2-ayatanaappindicator3-0.1`, plus
+`gir1.2-secret-1` as a recommendation), so `apt install ./…deb` resolves
+everything. It ships a system-wide autostart entry rather than touching any
+user's home — the API key still goes to each user's own keyring.
+
+Note the shebang is `/usr/bin/python3`, not `/usr/bin/env python3`, on purpose:
+the app needs the distro's GI/cairo packages, and `env python3` picks up a
+venv/pyenv/conda interpreter that has neither.
 
 ## Development
 
