@@ -1,0 +1,74 @@
+# RPM spec template (Fedora/RHEL/openSUSE-style). packaging/build-rpm.sh fills
+# in @VERSION@, @DATE@ and @MAINTAINER@ from __version__ and builds it.
+
+Name:           openrouter-credits-tray
+Version:        @VERSION@
+Release:        1%{?dist}
+Summary:        OpenRouter credits tray indicator
+
+License:        MIT
+URL:            https://github.com/Fax/openrouter-credits-tray
+Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
+
+BuildArch:      noarch
+BuildRequires:  desktop-file-utils
+
+Requires:       python3
+Requires:       python3-gobject
+Requires:       python3-cairo
+Requires:       gtk3
+# xlib-2.0.typelib, which the AppIndicator typelib loads but does not require
+Requires:       gobject-introspection
+Requires:       libayatana-appindicator-gtk3
+Requires:       hicolor-icon-theme
+# Secret Service bindings; without them the key comes from the env or config file
+Recommends:     libsecret
+
+%description
+Shows the remaining OpenRouter account credit in the system tray as a live
+badge, with a menu for usage details and a settings form that stores the API
+key in the desktop keyring (Secret Service).
+
+Speaks the standard StatusNotifierItem / Ayatana AppIndicator protocol, so it
+works on KDE Plasma, Cinnamon, Xfce, MATE, Budgie, LXQt and GNOME (with the
+AppIndicator extension).
+
+%prep
+%autosetup
+# the tarball can come from a filesystem without Unix modes (NTFS, exFAT)
+chmod 0644 README.md LICENSE
+
+%build
+# nothing to build: a single Python script
+
+%install
+install -D -m 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+install -D -m 0644 packaging/%{name}.desktop \
+    %{buildroot}%{_datadir}/applications/%{name}.desktop
+install -D -m 0644 packaging/%{name}-autostart.desktop \
+    %{buildroot}%{_sysconfdir}/xdg/autostart/%{name}.desktop
+install -D -m 0644 packaging/icons/%{name}-48.png \
+    %{buildroot}%{_datadir}/icons/hicolor/48x48/apps/%{name}.png
+install -D -m 0644 packaging/icons/%{name}-256.png \
+    %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/%{name}.png
+install -D -m 0644 packaging/%{name}.1 %{buildroot}%{_mandir}/man1/%{name}.1
+
+# No scriptlets: hicolor-icon-theme's file triggers rebuild the icon cache.
+
+%check
+desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
+desktop-file-validate %{buildroot}%{_sysconfdir}/xdg/autostart/%{name}.desktop
+
+%files
+%license LICENSE
+%doc README.md
+%{_bindir}/%{name}
+%{_datadir}/applications/%{name}.desktop
+%config(noreplace) %{_sysconfdir}/xdg/autostart/%{name}.desktop
+%{_datadir}/icons/hicolor/48x48/apps/%{name}.png
+%{_datadir}/icons/hicolor/256x256/apps/%{name}.png
+%{_mandir}/man1/%{name}.1*
+
+%changelog
+* @DATE@ @MAINTAINER@ - @VERSION@-1
+- Release @VERSION@. See https://github.com/Fax/openrouter-credits-tray/releases

@@ -5,6 +5,7 @@
 #   make uninstall   remove the user-local install (keeps your keyring entry)
 #   make dist        source tarball in dist/
 #   make deb         Debian package in dist/
+#   make rpm         RPM package in dist/ (Fedora)
 #   make release V=patch   bump the version, tag and push (patch|minor|major|X.Y.Z)
 #   make clean       drop build artefacts
 
@@ -16,12 +17,12 @@ VERSION := $(shell sed -n 's/^__version__ = "\(.*\)"/\1/p' $(APP) | head -1)
 DIST := dist
 TARBALL := $(DIST)/$(NAME)-$(VERSION).tar.gz
 
-.PHONY: all test install uninstall dist deb icons release clean help
+.PHONY: all test install uninstall dist deb rpm icons release clean help
 
 all: test
 
 help:
-	@sed -n '2,10p' $(MAKEFILE_LIST)
+	@sed -n '2,11p' $(MAKEFILE_LIST)
 
 test:
 	$(PY) -m unittest discover -s tests -v
@@ -55,6 +56,9 @@ $(TARBALL): $(APP) README.md LICENSE install.sh Makefile packaging tests docs
 
 deb: $(APP) README.md LICENSE
 	./packaging/build-deb.sh
+
+rpm: $(APP) README.md LICENSE
+	./packaging/build-rpm.sh
 
 release:
 	@test -n "$(V)" || { echo 'usage: make release V=patch|minor|major|X.Y.Z'; exit 2; }
