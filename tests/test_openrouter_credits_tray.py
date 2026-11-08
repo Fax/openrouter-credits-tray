@@ -166,5 +166,63 @@ class TestInterval(unittest.TestCase):
         self.assertEqual(tray._interval(), 300)
 
 
+class TestAutostart(unittest.TestCase):
+    """The user entry overrides the packaged /etc/xdg one by sharing its name."""
+
+    def setUp(self):
+        import tempfile
+
+        self._saved = (
+            tray.AUTOSTART_FILE,
+            tray.LEGACY_AUTOSTART_FILE,
+            tray.SYSTEM_AUTOSTART_FILE,
+        )
+        self.dir = Path(tempfile.mkdtemp())
+        tray.AUTOSTART_FILE = self.dir / "user" / "openrouter-credits-tray.desktop"
+        tray.LEGACY_AUTOSTART_FILE = self.dir / "user" / "openrouter-credits.desktop"
+        tray.SYSTEM_AUTOSTART_FILE = self.dir / "etc" / "openrouter-credits-tray.desktop"
+
+    def tearDown(self):
+        import shutil
+
+        (
+            tray.AUTOSTART_FILE,
+            tray.LEGACY_AUTOSTART_FILE,
+            tray.SYSTEM_AUTOSTART_FILE,
+        ) = self._saved
+        shutil.rmtree(self.dir)
+
+    def _install_system_entry(self):
+        tray.SYSTEM_AUTOSTART_FILE.parent.mkdir(parents=True)
+        tray.SYSTEM_AUTOSTART_FILE.write_text("[Desktop Entry]\nType=Application\n")
+
+    def test_user_install_toggle(self):
+        self.assertFalse(tray.autostart_enabled())
+        tray.set_autostart(True)
+        self.assertTrue(tray.autostart_enabled())
+        self.assertIn("--delay 5", tray.AUTOSTART_FILE.read_text())
+        tray.set_autostart(False)
+        self.assertFalse(tray.autostart_enabled())
+        self.assertFalse(tray.AUTOSTART_FILE.exists())
+
+    def test_package_entry_is_overridden_not_duplicated(self):
+        self._install_system_entry()
+        self.assertTrue(tray.autostart_enabled())
+        tray.set_autostart(False)
+        self.assertFalse(tray.autostart_enabled())
+        self.assertIn("Hidden=true", tray.AUTOSTART_FILE.read_text())
+        tray.set_autostart(True)
+        self.assertTrue(tray.autostart_enabled())
+        self.assertFalse(tray.AUTOSTART_FILE.exists())
+
+    def test_legacy_file_counts_and_is_cleaned_up(self):
+        tray.LEGACY_AUTOSTART_FILE.parent.mkdir(parents=True)
+        tray.LEGACY_AUTOSTART_FILE.write_text("[Desktop Entry]\n")
+        self.assertTrue(tray.autostart_enabled())
+        tray.set_autostart(False)
+        self.assertFalse(tray.LEGACY_AUTOSTART_FILE.exists())
+        self.assertFalse(tray.autostart_enabled())
+
+
 if __name__ == "__main__":
     unittest.main()

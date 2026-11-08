@@ -2,13 +2,13 @@
 # Pinned to the system interpreter on purpose: this app needs the distro's
 # GI/cairo packages (python3-gi, gir1.2-*), which only exist in /usr/bin/python3.
 # `#!/usr/bin/env python3` breaks when a venv, pyenv or conda shim is first on
-# PATH — that python3 has no gi/cairo and the tray dies at import.
+# PATH: that python3 has no gi/cairo and the tray dies at import.
 """OpenRouter credits tray indicator.
 
 Speaks the standard StatusNotifierItem / Ayatana AppIndicator protocol over
 D-Bus, so it works with any host that provides a status-notifier area:
 Cinnamon, XFCE, KDE Plasma, MATE, Budgie, LXQt, and GNOME via the AppIndicator
-extension. Verified on Cinnamon (Linux Mint 22.3) — see the README for the
+extension. Verified on Cinnamon (Linux Mint 22.3); see the README for the
 panel quirks found there.
 
 Shows the remaining OpenRouter account credit in the system tray, refreshed
@@ -16,7 +16,7 @@ periodically. Click for a menu with details (used/total, per-key budget,
 last update) plus manual refresh and quit.
 
 Key lookup order:
-  1. the desktop keyring (Secret Service: GNOME Keyring / KWallet) — the normal
+  1. the desktop keyring (Secret Service: GNOME Keyring / KWallet), the normal
      place; the Settings form writes there and it is never displayed back
   2. $OPENROUTER_API_KEY in the environment
   3. OPENROUTER_API_KEY= in ~/.config/openrouter-credits/config (fallback for
@@ -28,7 +28,7 @@ adding it later needs no restart.
 
 Requires the system python with these distro packages:
     python3-gi  gir1.2-ayatanaappindicator3-0.1  gir1.2-secret-1
-    (gir1.2-secret-1 is optional — without it, use the env/config fallback)
+    (gir1.2-secret-1 is optional; without it, use the env/config fallback)
 
 Run:
     /usr/bin/python3 openrouter-credits-tray.py
@@ -57,7 +57,7 @@ gi.require_version("AyatanaAppIndicator3", "0.1")
 from gi.repository import AyatanaAppIndicator3 as AppIndicator  # noqa: E402
 from gi.repository import Gio, GLib, Gtk  # noqa: E402
 
-try:  # Secret Service API (GNOME Keyring / KWallet) — the desktop standard
+try:  # Secret Service API (GNOME Keyring / KWallet), the desktop standard
     gi.require_version("Secret", "1")
     from gi.repository import Secret  # noqa: E402
 
@@ -106,7 +106,7 @@ def read_config_file() -> dict[str, str]:
 
 
 CONFIG_TEMPLATE = """\
-# OpenRouter credits tray — configuration
+# OpenRouter credits tray configuration
 #
 # The API key is NOT stored here. It lives in the desktop keyring (Secret
 # Service: GNOME Keyring / KWallet), written by the tray's Settings form.
@@ -216,7 +216,7 @@ def keyring_lookup() -> str | None:
 
 
 def keyring_state() -> str:
-    """'ok' | 'locked' | 'empty' | 'unavailable' — for an honest status line."""
+    """'ok' | 'locked' | 'empty' | 'unavailable', for an honest status line."""
     if not HAVE_SECRET:
         return "unavailable"
     svc = _secret_service()
@@ -246,8 +246,8 @@ def write_config(config: dict[str, str]) -> Path:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     os.chmod(CONFIG_DIR, 0o700)
     lines = [
-        "# OpenRouter credits tray — configuration",
-        "# Written by: openrouter-credits-tray.py — the API key is NOT here,",
+        "# OpenRouter credits tray configuration",
+        "# Written by: openrouter-credits-tray.py. The API key is NOT here,",
         "# it is stored in the desktop keyring (Secret Service).",
         "",
     ]
@@ -296,7 +296,7 @@ def resolve_key() -> tuple[str | None, str]:
         return stored.strip(), "keyring (Secret Service)"
     locked_note = ""
     if keyring_state() == "locked":
-        locked_note = "keyring LOCKED — unlock it, or "
+        locked_note = "keyring LOCKED - unlock it, or "
     env_key = (os.environ.get("OPENROUTER_API_KEY") or "").strip()
     if env_key:
         return env_key, locked_note + "$OPENROUTER_API_KEY"
@@ -323,7 +323,7 @@ def api_get(url: str, key: str) -> dict:
         headers={
             "Authorization": f"Bearer {key}",
             "Accept": "application/json",
-            "User-Agent": f"{APP_ID}/1.0",
+            "User-Agent": f"openrouter-credits-tray/{__version__}",
         },
     )
     with urllib.request.urlopen(req, timeout=20) as resp:
@@ -499,7 +499,7 @@ class TrayApp:
         )
         self.indicator.set_icon_full("dialog-information", "OpenRouter credits")
         self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-        self.indicator.set_label("…", "")
+        self.indicator.set_label("...", "")
         self.indicator.set_title("OpenRouter credits")
 
         self.menu = Gtk.Menu()
@@ -508,7 +508,7 @@ class TrayApp:
         self.header = Gtk.MenuItem(label="OpenRouter credits")
         self.header.set_sensitive(False)
         self.menu.append(self.header)
-        self.detail = Gtk.MenuItem(label="loading…")
+        self.detail = Gtk.MenuItem(label="loading...")
         self.detail.set_sensitive(False)
         self.menu.append(self.detail)
         self.budget = Gtk.MenuItem(label="")
@@ -528,11 +528,11 @@ class TrayApp:
         refresh.connect("activate", lambda *_: self.refresh(None))
         self.menu.append(refresh)
 
-        open_page = Gtk.MenuItem(label="Open OpenRouter usage…")
+        open_page = Gtk.MenuItem(label="Open OpenRouter usage...")
         open_page.connect("activate", lambda *_: self.open_page())
         self.menu.append(open_page)
 
-        settings = Gtk.MenuItem(label="Settings…")
+        settings = Gtk.MenuItem(label="Settings...")
         settings.connect("activate", lambda *_: self.open_settings())
         self.menu.append(settings)
 
@@ -593,7 +593,7 @@ class TrayApp:
         self._prune_icons()
         self.pending_icons[icon] = message
         GLib.timeout_add(350, self._announce_icon, icon)
-        self.header.set_label("OpenRouter credits — error")
+        self.header.set_label("OpenRouter credits: error")
         self.detail.set_label(message[:80])
         self.keyinfo.set_label(f"Key: {self.key_source}")
         self.stamp.set_label("")
@@ -623,13 +623,11 @@ class TrayApp:
         return False
 
     def refresh(self, _user_data) -> bool:
-        # Re-resolve on every tick so a key added later (or a Hermes .env that
-        # appeared after login) is picked up without a restart.
+        # Re-resolve on every tick so a key added later (or a keyring unlocked
+        # after login) is picked up without a restart.
         self.key, self.key_source = resolve_key()
         if not self.key:
-            self.set_error(
-                f"No API key. Set it in {CONFIG_FILE} (menu: Edit config)"
-            )
+            self.set_error("No API key: open Settings... to add one")
             return True
         try:
             self.state = fetch_credits(self.key)
@@ -676,7 +674,7 @@ class TrayApp:
             except ValueError:
                 pass
         if parts:
-            self.budget.set_label("  •  ".join(parts))
+            self.budget.set_label("  |  ".join(parts))
             self.budget.show()
         else:
             self.budget.hide()
@@ -706,16 +704,38 @@ class TrayApp:
 
 # ------------------------------------------------------------------- autostart
 
-AUTOSTART_FILE = Path.home() / ".config" / "autostart" / f"{APP_ID}.desktop"
+# The per-user entry shares its file name with the system-wide one the .deb
+# installs, so (per the XDG autostart spec) it overrides it: a user who unticks
+# "Start on login" gets a Hidden=true override instead of a second, unrelated
+# file that cannot stop the system entry.
+AUTOSTART_NAME = "openrouter-credits-tray.desktop"
+AUTOSTART_FILE = Path.home() / ".config" / "autostart" / AUTOSTART_NAME
+LEGACY_AUTOSTART_FILE = Path.home() / ".config" / "autostart" / f"{APP_ID}.desktop"
+SYSTEM_AUTOSTART_FILE = Path("/etc/xdg/autostart") / AUTOSTART_NAME
 SCRIPT_PATH = Path(__file__).resolve()
 
 
+def _is_hidden_override(path: Path) -> bool:
+    try:
+        values = parse_env_text(path.read_text())
+    except OSError:
+        return False
+    return values.get("Hidden", "").lower() == "true"
+
+
 def autostart_enabled() -> bool:
-    return AUTOSTART_FILE.exists()
+    if AUTOSTART_FILE.exists():
+        return not _is_hidden_override(AUTOSTART_FILE)
+    return LEGACY_AUTOSTART_FILE.exists() or SYSTEM_AUTOSTART_FILE.exists()
 
 
 def set_autostart(enabled: bool) -> None:
+    LEGACY_AUTOSTART_FILE.unlink(missing_ok=True)
     if enabled:
+        if SYSTEM_AUTOSTART_FILE.exists():
+            # dropping our override re-enables the packaged entry
+            AUTOSTART_FILE.unlink(missing_ok=True)
+            return
         AUTOSTART_FILE.parent.mkdir(parents=True, exist_ok=True)
         AUTOSTART_FILE.write_text(
             "[Desktop Entry]\n"
@@ -726,8 +746,43 @@ def set_autostart(enabled: bool) -> None:
             "X-GNOME-Autostart-enabled=true\n"
             "NoDisplay=false\n"
         )
+    elif SYSTEM_AUTOSTART_FILE.exists():
+        AUTOSTART_FILE.parent.mkdir(parents=True, exist_ok=True)
+        AUTOSTART_FILE.write_text(
+            "[Desktop Entry]\n"
+            "Type=Application\n"
+            "Name=OpenRouter Credits Tray\n"
+            "Hidden=true\n"
+        )
     else:
         AUTOSTART_FILE.unlink(missing_ok=True)
+
+
+# ------------------------------------------------------------- single instance
+
+_INSTANCE_LOCK = None  # keeps the lock's file object alive for the process
+
+
+def acquire_instance_lock() -> bool:
+    """Return True if no other tray is running for this user.
+
+    The .deb ships both a menu entry and an autostart entry, so launching from
+    the menu while the tray is already up would otherwise add a second icon.
+    """
+    global _INSTANCE_LOCK
+    import fcntl
+
+    runtime = os.environ.get("XDG_RUNTIME_DIR")
+    lock_dir = Path(runtime) if runtime and Path(runtime).is_dir() else CONFIG_DIR
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    handle = open(lock_dir / f"{APP_ID}.lock", "w")
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        return False
+    _INSTANCE_LOCK = handle
+    return True
 
 
 def wait_for_status_notifier(timeout: float = 20.0) -> bool:
@@ -773,7 +828,7 @@ class SettingsForm:
         self.on_saved = on_saved
         self.key, self.source = resolve_key()
 
-        self.dialog = Gtk.Dialog(title="OpenRouter Credits — Settings")
+        self.dialog = Gtk.Dialog(title="OpenRouter Credits Settings")
         self.dialog.set_border_width(14)
         self.dialog.set_resizable(False)
         if parent is not None:
@@ -796,7 +851,7 @@ class SettingsForm:
         self.entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
         self.entry.set_width_chars(42)
         self.entry.set_placeholder_text(
-            "stored — type a new key to replace it" if self.key else "sk-or-v1-…"
+            "stored, type a new key to replace it" if self.key else "sk-or-v1-..."
         )
         self.entry.set_activates_default(True)
         grid.attach(self.entry, 1, row, 1, 1)
@@ -816,7 +871,7 @@ class SettingsForm:
         stored = (
             f"Key source: {self.source}"
             if self.key
-            else "No key stored yet — paste one above and press Save."
+            else "No key stored yet. Paste one above and press Save."
         )
         self.status = Gtk.Label(xalign=0)
         self.status.set_markup(f"<small>{GLib.markup_escape_text(stored)}</small>")
@@ -846,7 +901,7 @@ class SettingsForm:
                     messages.append("API key saved to the keyring.")
                 else:
                     messages.append(
-                        "Could not save the key to the keyring — is the keyring "
+                        "Could not save the key to the keyring. Is the keyring "
                         "unlocked?"
                     )
             config = read_config_file()
@@ -877,8 +932,12 @@ class SettingsForm:
         dialog.destroy()
 
 
-def open_settings_form(parent=None, on_saved=None) -> None:
-    SettingsForm(parent, on_saved)
+def run_settings_standalone() -> int:
+    """Show the Settings form on its own and exit when it closes."""
+    form = SettingsForm(None, lambda messages: messages and print(" ".join(messages)))
+    form.dialog.connect("destroy", lambda *_: Gtk.main_quit())
+    Gtk.main()
+    return 0
 
 
 def main() -> int:
@@ -890,7 +949,7 @@ def main() -> int:
         print(__doc__)
         print(
             "Options:\n"
-            "  --settings        open the Settings form (API key → keyring) and exit\n"
+            "  --settings        open the Settings form (API key to keyring) and exit\n"
             "  --set-key [KEY]   store KEY in the keyring (prompts when omitted) and exit\n"
             "  --clear-key       remove the stored key from the keyring and exit\n"
             "  --check           print the key source and a live balance, then exit\n"
@@ -926,9 +985,7 @@ def main() -> int:
         return 0
 
     if "--settings" in args:
-        open_settings_form(None, lambda messages: print(" ".join(messages)))
-        Gtk.main()
-        return 0
+        return run_settings_standalone()
 
     if "--check" in args:
         key, source = resolve_key()
@@ -956,6 +1013,12 @@ def main() -> int:
                 delay = max(0.0, float(args[index + 1]))
             except ValueError:
                 delay = 0.0
+    if not acquire_instance_lock():
+        if "--delay" in args:  # login autostart: the tray is already up
+            return 0
+        # Launched again from the menu: the user most likely wants Settings.
+        print("openrouter-credits-tray is already running; opening Settings.")
+        return run_settings_standalone()
     if delay:
         time.sleep(delay)
     wait_for_status_notifier()

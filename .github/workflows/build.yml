@@ -1,0 +1,90 @@
+# Test, build the .deb and the source tarball on every push and PR.
+# Pushing a tag like v1.0.0 also publishes a GitHub Release with both attached.
+#
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# The tag must match __version__ in openrouter-credits-tray.py.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-gi python3-gi-cairo python3-cairo gir1.2-gtk-3.0 \
+            gir1.2-ayatanaappindicator3-0.1 gir1.2-secret-1 \
+            desktop-file-utils lintian
+
+      - name: Check the tag matches __version__
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' openrouter-credits-tray.py | head -1)"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match __version__ ${version}"
+            exit 1
+          fi
+
+      - name: Unit tests
+        run: make test
+
+      - name: Validate desktop entries
+        run: desktop-file-validate packaging/*.desktop
+
+      - name: Build .deb and tarball
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          make deb dist
+
+      - name: Lintian
+        run: lintian --fail-on error --info --display-level ">=warning" dist/*.deb
+
+      - name: Install the .deb and smoke-test it
+        run: |
+          sudo apt-get install -y ./dist/*.deb
+          openrouter-credits-tray --version
+          test -f /etc/xdg/autostart/openrouter-credits-tray.desktop
+          test -f /usr/share/applications/openrouter-credits-tray.desktop
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openrouter-credits-tray
+          path: |
+            dist/*.deb
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: openrouter-credits-tray
+          path: dist
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

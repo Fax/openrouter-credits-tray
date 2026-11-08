@@ -49,7 +49,7 @@ try:
     import gi
     gi.require_version("Secret", "1")
 except (ValueError, ImportError):
-    print("note: gir1.2-secret-1 not installed — keyring storage disabled,")
+    print("note: gir1.2-secret-1 not installed, keyring storage disabled;")
     print("      the tray will use $OPENROUTER_API_KEY or the config file instead")
 PYCHECK
 if [ "$missing" -ne 0 ]; then
@@ -64,7 +64,8 @@ install -m 0755 "${HERE}/openrouter-credits-tray.py" "${TARGET}"
 if [ "$AUTOSTART" -eq 1 ]; then
     echo "==> enabling start on login"
     mkdir -p "${AUTOSTART_DIR}"
-    cat > "${AUTOSTART_DIR}/openrouter-credits.desktop" <<EOF
+    rm -f "${AUTOSTART_DIR}/openrouter-credits.desktop"   # older releases used this name
+    cat > "${AUTOSTART_DIR}/openrouter-credits-tray.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=OpenRouter Credits Tray
@@ -101,4 +102,4 @@ if [ "$START" -eq 1 ]; then
 fi
 
 echo
-echo "Done. Open the tray menu and pick 'Settings…' to paste your OpenRouter API key."
+echo "Done. Open the tray menu and pick 'Settings...' to paste your OpenRouter API key."

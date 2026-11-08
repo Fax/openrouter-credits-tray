@@ -1,31 +1,33 @@
 # openrouter-credits-tray
 
-A tiny Linux system-tray indicator that shows your remaining **OpenRouter**
-credit as a live badge, so you can see the balance drop while you work instead
-of opening the dashboard.
+[![build](https://github.com/Fax/openrouter-credits-tray/actions/workflows/build.yml/badge.svg)](https://github.com/Fax/openrouter-credits-tray/actions/workflows/build.yml)
+
+A Linux system tray indicator that shows your remaining OpenRouter credit as a
+badge, so you can follow the balance without opening the dashboard.
 
 ![the tray badge](docs/tray-badge.png)
 
-Left-click the badge for the detail menu, including the Settings form:
+Left-click the badge to open the menu, which includes the Settings form:
 
 ![the settings form](docs/settings-form.png)
 
-## What it does
+## Features
 
-- Shows the remaining credit **inside the icon** as a price tag (`$3.04`), colour
-  coded: green above $2, amber above $0.50, red below.
-- Refreshes every 5 minutes (configurable), and on demand from the menu.
-- Menu shows: remaining, `used / purchased`, the per-key budget and its reset
-  date, the last update time, and which key source is in use.
-- **Settings form** to paste the API key and set the refresh interval.
-- Stores the key in the **desktop keyring** (Secret Service: GNOME Keyring,
-  KWallet). It is never written to a config file and never displayed back.
-- Optional start-on-login, and a systemd user unit if you prefer that.
+- The remaining credit is drawn inside the icon (`$3.04`). The colour is green
+  above $2, amber above $0.50 and red below that.
+- Refreshes every 5 minutes by default, or on demand from the menu.
+- The menu shows the remaining credit, used and purchased amounts, the per-key
+  budget and its reset date, the time of the last update and where the API key
+  was read from.
+- A Settings form to enter the API key and change the refresh interval.
+- The key is stored in the desktop keyring (Secret Service: GNOME Keyring,
+  KWallet). It is not written to a config file and is never shown again.
+- Optional start on login, or a systemd user unit.
 
 ## Requirements
 
-A Linux desktop with a StatusNotifier/appindicator tray (Cinnamon, XFCE, KDE,
-GNOME with an extension, …), and the **system** Python:
+A Linux desktop with a StatusNotifier/AppIndicator tray (Cinnamon, XFCE, KDE,
+GNOME with the AppIndicator extension, and others) and the system Python:
 
 ```bash
 # Debian / Ubuntu / Mint
@@ -38,169 +40,221 @@ sudo dnf install python3-gobject libayatana-appindicator-gtk3 libsecret
 sudo pacman -S python-gobject libayatana-appindicator libsecret
 ```
 
-`gir1.2-secret-1` is optional — without it the keyring is unavailable and the
-tray falls back to `$OPENROUTER_API_KEY` or the config file.
+`gir1.2-secret-1` is optional. Without it the keyring is not available and the
+tray reads the key from `$OPENROUTER_API_KEY` or the config file instead.
 
 ## Install
 
-**On Debian / Ubuntu / Mint — from a package** (pulls the dependencies for you):
+### Debian, Ubuntu, Mint
+
+Download the `.deb` from the
+[releases page](https://github.com/Fax/openrouter-credits-tray/releases) and
+install it with apt, which also installs the dependencies:
 
 ```bash
 sudo apt install ./openrouter-credits-tray_1.0.0_all.deb
 ```
 
-That installs `/usr/bin/openrouter-credits-tray`, a menu entry, the app icon, and
-a system-wide autostart entry (`/etc/xdg/autostart/`) so it starts for every user
-on login. Grab the `.deb` from the releases page, or build it with `make deb`.
+The package installs `/usr/bin/openrouter-credits-tray`, a menu entry, the app
+icon and a system-wide autostart entry in `/etc/xdg/autostart/`, so the tray
+starts for every user on login. You can also build the package yourself with
+`make deb`.
 
-**Anywhere else — from source:**
+### Other distributions, from source
 
 ```bash
-git clone https://github.com/<you>/openrouter-credits-tray.git
+git clone https://github.com/Fax/openrouter-credits-tray.git
 cd openrouter-credits-tray
 ./install.sh              # copies the script to ~/.local/bin and starts it
 ```
 
-Or from a release tarball: unpack it and run `./install.sh`.
+The release tarball works the same way: unpack it and run `./install.sh`.
 
-Either way, open the tray menu → **Settings…** and paste an OpenRouter API key
-(create one at <https://openrouter.ai/settings/keys>). Save — the key goes
-straight into your keyring.
+`install.sh` options:
 
-`install.sh` flags:
-
-| Flag | Effect |
+| Option | Effect |
 |---|---|
-| `--autostart` | also start it on login (writes `~/.config/autostart/…desktop`) |
-| `--systemd` | install and enable a systemd **user** unit instead |
-| `--no-start` | install only, don't launch |
+| `--autostart` | also start on login (writes `~/.config/autostart/openrouter-credits-tray.desktop`) |
+| `--systemd` | install and enable a systemd user unit instead |
+| `--no-start` | install only, do not start the tray |
+
+### Adding your API key
+
+Open the tray menu, choose Settings and paste an OpenRouter API key. You can
+create one at <https://openrouter.ai/settings/keys>. When you press Save the key
+is stored in your keyring.
 
 ## Usage
 
 ```bash
 openrouter-credits-tray.py              # run the tray
 openrouter-credits-tray.py --settings   # open the Settings form
-openrouter-credits-tray.py --check      # print the key source + a live balance
-openrouter-credits-tray.py --set-key    # store a key (hidden prompt, no shell history)
+openrouter-credits-tray.py --check      # print the key source and the current balance
+openrouter-credits-tray.py --set-key    # store a key (hidden prompt, nothing in shell history)
 openrouter-credits-tray.py --clear-key  # remove the stored key
+openrouter-credits-tray.py --version    # print the version
 ```
 
-Environment variables:
+When installed from the `.deb` the command is `openrouter-credits-tray`.
 
-- `OPENROUTER_TRAY_INTERVAL` — refresh seconds (default `300`, minimum `30`).
+Only one tray runs per user. Starting it again, for example from the app menu
+while it is already in the panel, opens the Settings form instead of adding a
+second icon.
 
-## Where things live
+The refresh interval can also be set with the `OPENROUTER_TRAY_INTERVAL`
+environment variable, in seconds (default 300, minimum 30).
 
-| Path | What |
+## Files
+
+| Path | Contents |
 |---|---|
-| `~/.config/openrouter-credits/config` | non-secret settings (refresh interval) |
-| `~/.config/autostart/openrouter-credits.desktop` | start-on-login entry, when enabled |
+| `~/.config/openrouter-credits/config` | settings that are not secret (refresh interval) |
+| `~/.config/autostart/openrouter-credits-tray.desktop` | start on login entry, when enabled |
 | `~/.local/share/icons/hicolor/*/apps/openrouter-credits-*.png` | generated badge icons |
 
-## Key handling
+## How the API key is handled
 
-Lookup order: **keyring → `$OPENROUTER_API_KEY` → config file**. A plaintext key
-found in the config file is migrated into the keyring on the next start and
-removed from the file.
+The key is looked up in this order: the keyring, then `$OPENROUTER_API_KEY`,
+then the config file. If a plain text key is found in the config file, it is
+moved into the keyring on the next start and removed from the file.
 
-Be clear about what the keyring buys you:
+What the keyring does and does not protect against:
 
-- **It does** keep the key out of a plaintext file: an unencrypted disk, a
-  backup, or a stray file read no longer yields it.
-- **It does not** protect against other processes running as *you*. While the
-  keyring is unlocked, any of your processes can ask the daemon for the secret —
-  Linux keyrings have no per-application ACL.
-- If the keyring is locked (or the daemon is missing), the menu says so
-  explicitly — `Key: keyring LOCKED — unlock it, or …` — rather than silently
-  falling back.
+- It keeps the key out of plain text files, so an unencrypted disk, a backup or
+  a stray file read does not expose it.
+- It does not protect against other processes running as your user. While the
+  keyring is unlocked, any of your processes can ask the daemon for the secret.
+  Linux keyrings have no per-application access control.
+- If the keyring is locked or the daemon is missing, the menu says so
+  (`Key: keyring LOCKED - unlock it, or ...`) instead of silently using another
+  source.
 
-The tray talks only to `openrouter.ai/api/v1/credits` and `/api/v1/key`, with the
-key in an `Authorization: Bearer` header over TLS. It writes nothing else.
+The tray only contacts `openrouter.ai/api/v1/credits` and `/api/v1/key`, over
+HTTPS, with the key in an `Authorization: Bearer` header.
 
 ## Troubleshooting
 
-**The tray icon is a broken-image placeholder.** The panel resolves icon names
-through the GTK icon theme, which is backed by `icon-theme.cache`. This app
-writes its badge into `~/.local/share/icons/hicolor/<size>/apps/` and regenerates
-that cache (`gtk-update-icon-cache -f -t`) after every write — without it, a
-stale cache makes brand-new icon files invisible. If you still see a placeholder,
-the cache in *your* theme is stale; run:
+### The tray icon shows a broken image
+
+The panel finds icons by name through the GTK icon theme, which uses
+`icon-theme.cache`. The app writes its badge to
+`~/.local/share/icons/hicolor/<size>/apps/` and rebuilds that cache after every
+write, because an outdated cache hides new icon files. If you still see a broken
+image, rebuild the cache by hand:
 
 ```bash
 gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
 ```
 
-**The icon shows on the next refresh but not immediately.** Publishing a brand-new
-icon name in the same instant its file and the cache are written can make the
-panel resolve it against a cache it is still reading. The app avoids this by
-writing the file first and announcing the name ~350 ms later. Nothing to do.
+### The icon appears only after the next refresh
 
-**`n/a` in the badge and an error in the menu.** Read the menu's `Key:` line:
+If a new icon name is announced at the same moment its file and the cache are
+written, the panel can look it up before the cache is ready. The app writes the
+file first and announces the name about 350 ms later, so this should not happen.
 
-- `not set` → no key anywhere; open **Settings…**.
-- `keyring LOCKED …` → unlock your keyring (on Mint/Cinnamon the *Login* keyring
-  is unlocked by PAM at login; a keyring with a different password stays locked).
-- `HTTP 401` → the key is wrong or revoked.
-- `Network error` → no connectivity to `openrouter.ai`.
+### The badge shows `n/a` and the menu shows an error
 
-**Nothing appears in the tray at all.** Confirm your panel has a status-notifier
-area, and that `org.kde.StatusNotifierWatcher` is on the session bus:
+Check the `Key:` line in the menu:
+
+- `not set`: no key was found. Open Settings and add one.
+- `keyring LOCKED`: unlock your keyring. On Mint/Cinnamon the Login keyring is
+  unlocked at login by PAM; a keyring with a different password stays locked.
+- `HTTP 401`: the key is wrong or has been revoked.
+- `Network error`: `openrouter.ai` cannot be reached.
+
+### Nothing appears in the tray
+
+Check that your panel has a status notifier area and that
+`org.kde.StatusNotifierWatcher` is on the session bus:
 
 ```bash
 gdbus call --session --dest org.kde.StatusNotifierWatcher --object-path /StatusNotifierWatcher \
   --method org.freedesktop.DBus.Properties.Get org.kde.StatusNotifierWatcher RegisteredStatusNotifierItems
 ```
 
-A tray item can linger in the panel after its process dies; restarting
-`xapp-sn-watcher` (Mint) clears stale entries without touching the shell.
+A tray item can stay in the panel after its process has exited. On Mint,
+restarting `xapp-sn-watcher` removes stale entries without restarting the shell.
 
-**Start-on-login doesn't fire.** The app can start before the panel registers the
-watcher; it waits for the watcher before creating the icon, and the autostart
-entry also passes `--delay 5`.
+### The tray does not start on login
+
+The app can start before the panel is ready. It waits for the status notifier
+watcher before creating the icon, and the autostart entry also passes
+`--delay 5`.
 
 ## Uninstall
 
+Package install:
+
 ```bash
-openrouter-credits-tray.py --clear-key       # remove the stored key from the keyring
-rm ~/.local/bin/openrouter-credits-tray.py
-rm ~/.config/autostart/openrouter-credits.desktop   # if enabled
+sudo apt remove openrouter-credits-tray
+```
+
+Source install:
+
+```bash
+make uninstall
+```
+
+Either way, your API key stays in the keyring. To remove it and the remaining
+files:
+
+```bash
+openrouter-credits-tray.py --clear-key
 rm -rf ~/.config/openrouter-credits
 rm ~/.local/share/icons/hicolor/*/apps/openrouter-credits-*.png
 ```
 
-## Packaging
+## Building
 
 ```bash
 make test        # unit tests
 make deb         # dist/openrouter-credits-tray_<version>_all.deb
 make dist        # dist/openrouter-credits-tray-<version>.tar.gz
-make install     # user-local install (same as ./install.sh --autostart)
-make uninstall   # remove the user-local install (your keyring entry is kept)
-make icons       # regenerate packaging/icons from the app's own drawing code
+make install     # install for the current user (same as ./install.sh --autostart)
+make uninstall   # remove the user install (the keyring entry is kept)
+make icons       # regenerate packaging/icons from the app's drawing code
 ```
 
-The version comes from `__version__` in the script, so the package, the tarball
-and `--version` can't drift apart.
+The version is read from `__version__` in the script, so the package, the
+tarball and `--version` always match.
 
-The `.deb` is `Architecture: all` and declares its dependencies
-(`python3-gi`, `gir1.2-gtk-3.0`, `gir1.2-ayatanaappindicator3-0.1`, plus
-`gir1.2-secret-1` as a recommendation), so `apt install ./…deb` resolves
-everything. It ships a system-wide autostart entry rather than touching any
-user's home — the API key still goes to each user's own keyring.
+The `.deb` is `Architecture: all`. It depends on `python3-gi`, `gir1.2-gtk-3.0`
+and `gir1.2-ayatanaappindicator3-0.1` and recommends `gir1.2-secret-1`, so
+`apt install` pulls in everything it needs. It installs a system-wide autostart
+entry and does not touch anything in users' home directories. Each user's API
+key goes into their own keyring.
 
-Note the shebang is `/usr/bin/python3`, not `/usr/bin/env python3`, on purpose:
-the app needs the distro's GI/cairo packages, and `env python3` picks up a
-venv/pyenv/conda interpreter that has neither.
+The script starts with `#!/usr/bin/python3` rather than `#!/usr/bin/env python3`
+on purpose. The app needs the distribution's GI and cairo packages, and
+`env python3` can pick up a venv, pyenv or conda interpreter that has neither.
+
+### Releases
+
+The GitHub Actions workflow in `.github/workflows/build.yml` runs on every push
+and pull request. It runs the tests, builds the `.deb` and the tarball, checks
+the package with lintian and test-installs it. The built files are kept as a
+workflow artifact.
+
+To publish a release, update `__version__`, commit, and push a matching tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow checks that the tag matches `__version__` and creates a GitHub
+Release with the `.deb` and the tarball attached.
 
 ## Development
 
 ```bash
-python3 -m unittest discover -s tests -v     # pure-function tests, no display needed
+python3 -m unittest discover -s tests -v
 ```
 
-The single file is the whole app — no packaging, no build step. It needs
-`python3-gi` at import time, so tests run with the system Python.
+The tests cover the helper functions and need no display, keyring or network.
+They import the app, which needs `python3-gi`, so run them with the system
+Python. The whole app is the single file `openrouter-credits-tray.py`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

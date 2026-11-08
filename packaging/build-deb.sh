@@ -38,7 +38,21 @@ install -D -m 0644 "${HERE}/icons/${PKG}-256.png" \
 install -D -m 0644 "${ROOT}/README.md"          "${STAGE}/usr/share/doc/${PKG}/README.md"
 install -D -m 0644 "${ROOT}/LICENSE"            "${STAGE}/usr/share/doc/${PKG}/copyright"
 
+# Debian policy wants a changelog with every package; generate a minimal one.
+# SOURCE_DATE_EPOCH (set by CI from the commit time) keeps the build reproducible.
+STAMP="$(date -R -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}")"
+cat > "${STAGE}/usr/share/doc/${PKG}/changelog" <<EOF
+${PKG} (${VERSION}) unstable; urgency=medium
+
+  * Release ${VERSION}. See https://github.com/Fax/${PKG}/releases
+
+ -- ${MAINTAINER}  ${STAMP}
+EOF
+gzip -9n "${STAGE}/usr/share/doc/${PKG}/changelog"
+chmod 0644 "${STAGE}/usr/share/doc/${PKG}/changelog.gz"
+
 mkdir -p "${STAGE}/DEBIAN"
+INSTALLED_SIZE="$(du -sk --exclude=DEBIAN "${STAGE}" | cut -f1)"
 
 cat > "${STAGE}/DEBIAN/control" <<EOF
 Package: ${PKG}
@@ -47,6 +61,7 @@ Section: utils
 Priority: optional
 Architecture: all
 Maintainer: ${MAINTAINER}
+Installed-Size: ${INSTALLED_SIZE}
 Depends: python3, python3-gi, gir1.2-gtk-3.0, gir1.2-ayatanaappindicator3-0.1
 Recommends: gir1.2-secret-1
 Homepage: https://github.com/Fax/${PKG}
@@ -72,10 +87,15 @@ EOF
 cp "${STAGE}/DEBIAN/postinst" "${STAGE}/DEBIAN/postrm"
 chmod 0755 "${STAGE}/DEBIAN/postinst" "${STAGE}/DEBIAN/postrm"
 
+(cd "${STAGE}" && find usr etc -type f -print0 | sort -z | xargs -0 md5sum) \
+    > "${STAGE}/DEBIAN/md5sums"
+chmod 0644 "${STAGE}/DEBIAN/md5sums"
+
 mkdir -p "${OUT}"
 dpkg-deb --root-owner-group --build "${STAGE}" "${DEB}" >/dev/null
 
 echo "==> built ${DEB}"
+if [ -n "${GITHUB_OUTPUT:-}" ]; then echo "deb=${DEB}" >> "${GITHUB_OUTPUT}"; fi
 echo
 echo "Install on any Debian/Ubuntu/Mint machine with:"
 echo "    sudo apt install ./$(basename "${DEB}")"

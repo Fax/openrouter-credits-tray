@@ -1,19 +1,14 @@
 # Python
 __pycache__/
 *.py[cod]
-*.egg-info/
 .venv/
 venv/
 
-# The tray's own generated icons live in the user's theme dir, never here.
-# (scoped to the repo root so packaging/icons/*.png stay tracked)
-/openrouter-credits-*.png
+# Build output (make deb, make dist)
+dist/
 
-# Editors / OS
+# Editors and OS files
 .vscode/
 .idea/
 *.swp
 .DS_Store
-
-# Build artefacts
-dist/

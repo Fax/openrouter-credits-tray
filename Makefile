@@ -1,4 +1,4 @@
-# openrouter-credits-tray — install, test and packaging targets.
+# openrouter-credits-tray: install, test and packaging targets.
 #
 #   make test        run the unit tests
 #   make install     install for the current user (~/.local/bin + autostart)
@@ -32,7 +32,7 @@ uninstall:
 	-@systemctl --user stop $(NAME) 2>/dev/null || true
 	-@pkill -f "$(HOME)/.local/bin/$(APP)" 2>/dev/null || true
 	rm -f $(HOME)/.local/bin/$(APP)
-	rm -f $(HOME)/.config/autostart/$(NAME).desktop
+	rm -f $(HOME)/.config/autostart/$(NAME).desktop $(HOME)/.config/autostart/openrouter-credits.desktop
 	@echo "Removed. The stored key stays in your keyring;"
 	@echo "drop it with: $(APP) --clear-key"
 
