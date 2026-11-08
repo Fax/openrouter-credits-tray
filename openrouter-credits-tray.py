@@ -67,7 +67,7 @@ except (ValueError, ImportError):  # pragma: no cover - depends on the host
     HAVE_SECRET = False
 
 APP_ID = "openrouter-credits"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 CREDITS_URL = "https://openrouter.ai/api/v1/credits"
 KEY_URL = "https://openrouter.ai/api/v1/key"
 USAGE_PAGE = "https://openrouter.ai/settings/credits"
