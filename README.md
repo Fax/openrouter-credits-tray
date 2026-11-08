@@ -34,7 +34,7 @@ GNOME with the AppIndicator extension, and others) and the system Python:
 sudo apt install python3-gi gir1.2-ayatanaappindicator3-0.1 gir1.2-secret-1
 
 # Fedora
-sudo dnf install python3-gobject libayatana-appindicator-gtk3 libsecret
+sudo dnf install python3-gobject gobject-introspection libayatana-appindicator-gtk3 libsecret
 
 # Arch
 sudo pacman -S python-gobject libayatana-appindicator libsecret
@@ -59,6 +59,20 @@ The package installs `/usr/bin/openrouter-credits-tray`, a man page, a menu
 entry, the app icon and a system-wide autostart entry in `/etc/xdg/autostart/`, so the tray
 starts for every user on login. You can also build the package yourself with
 `make deb`.
+
+### Fedora
+
+Build the `.rpm` and install it with dnf, which also installs the dependencies:
+
+```bash
+sudo dnf install rpm-build desktop-file-utils
+make rpm
+sudo dnf install ./dist/openrouter-credits-tray-*.noarch.rpm
+```
+
+It installs the same files as the `.deb`. On GNOME the tray also needs the
+AppIndicator extension (`gnome-shell-extension-appindicator`); KDE Plasma has a
+tray built in.
 
 ### Other distributions, from source
 
@@ -95,7 +109,7 @@ openrouter-credits-tray.py --clear-key  # remove the stored key
 openrouter-credits-tray.py --version    # print the version
 ```
 
-When installed from the `.deb` the command is `openrouter-credits-tray`.
+When installed from the `.deb` or `.rpm` the command is `openrouter-credits-tray`.
 
 Only one tray runs per user. Starting it again, for example from the app menu
 while it is already in the panel, opens the Settings form instead of adding a
@@ -186,7 +200,8 @@ watcher before creating the icon, and the autostart entry also passes
 Package install:
 
 ```bash
-sudo apt remove openrouter-credits-tray
+sudo apt remove openrouter-credits-tray   # Debian, Ubuntu, Mint
+sudo dnf remove openrouter-credits-tray   # Fedora
 ```
 
 Source install:

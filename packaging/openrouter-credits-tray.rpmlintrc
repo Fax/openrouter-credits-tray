@@ -1,0 +1,6 @@
+# rpmlint filters for false positives (rpmlint -r packaging/openrouter-credits-tray.rpmlintrc).
+
+# "keyring" is the right word for the Secret Service store
+addFilter("spelling-error .* keyring")
+# Fedora's package has no typelib(AyatanaAppIndicator3) provide to depend on
+addFilter("explicit-lib-dependency libayatana-appindicator-gtk3")
