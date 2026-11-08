@@ -5,8 +5,9 @@ __pycache__/
 .venv/
 venv/
 
-# Generated at runtime by the app itself (never committed)
-openrouter-credits-*.png
+# The tray's own generated icons live in the user's theme dir, never here.
+# (scoped to the repo root so packaging/icons/*.png stay tracked)
+/openrouter-credits-*.png
 
 # Editors / OS
 .vscode/
