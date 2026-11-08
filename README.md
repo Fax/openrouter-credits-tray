@@ -52,7 +52,7 @@ Download the `.deb` from the
 install it with apt, which also installs the dependencies:
 
 ```bash
-sudo apt install ./openrouter-credits-tray_1.0.0_all.deb
+sudo apt install ./openrouter-credits-tray_*_all.deb
 ```
 
 The package installs `/usr/bin/openrouter-credits-tray`, a man page, a menu
@@ -213,6 +213,7 @@ make dist        # dist/openrouter-credits-tray-<version>.tar.gz
 make install     # install for the current user (same as ./install.sh --autostart)
 make uninstall   # remove the user install (the keyring entry is kept)
 make icons       # regenerate packaging/icons from the app's drawing code
+make release V=patch   # publish a new version (see Releases below)
 ```
 
 The version is read from `__version__` in the script, so the package, the
@@ -235,15 +236,22 @@ and pull request. It runs the tests, builds the `.deb` and the tarball, checks
 the package with lintian and test-installs it. The built files are kept as a
 workflow artifact.
 
-To publish a release, update `__version__`, commit, and push a matching tag:
+To publish a release, run the release script from a clean, up to date
+`master`:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+make release V=patch     # 1.0.0 -> 1.0.1; also minor, major, or e.g. V=1.2.0
 ```
 
-The workflow checks that the tag matches `__version__` and creates a GitHub
-Release with the `.deb` and the tarball attached.
+It runs the tests, sets `__version__`, checks that the `.deb` builds, commits
+`Release X.Y.Z`, creates the tag `vX.Y.Z` and asks before pushing. The script
+can also be called directly as `./packaging/release.sh patch`, with
+`--dry-run` to only show what it would do, `--no-push` to stop before pushing,
+or `--yes` to push without asking.
+
+When the tag reaches GitHub, the workflow checks that it matches
+`__version__` and creates a GitHub Release with the `.deb` and the tarball
+attached.
 
 ## Development
 
